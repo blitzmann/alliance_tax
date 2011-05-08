@@ -21,7 +21,7 @@
 ob_start("ob_gzhandler"); 
 
 define('TIMESTART', microtime(true));  // Start page benchmark
-define('VERSION', '1.1.1');  // Start page benchmark
+define('VERSION', '1.1.1');
 
 if (isset($_GET['source'])) {
 	// Also, apiDetails sample file can be found in root web. It's named 'apiDetails-sample.ini'
@@ -246,7 +246,7 @@ $i++;
 </p>
 </div>
 <div id='footer'>
-v<?php echo VERSION; ?> | Copyright &copy; 2011 Ryan Holmes/Sable Blitzmann of M.DYN | EVE Online &copy; CCP | <?php echo sprintf('%01.002fms', (microtime(true) - TIMESTART) * 1000); ?> | <a href="?source">View Source</a>
+v<?php echo VERSION; ?> | Copyright &copy; 2011 Ryan Holmes aka Sable Blitzmann of M.DYN | EVE Online &copy; CCP | <?php echo sprintf('%01.002fms', (microtime(true) - TIMESTART) * 1000); ?> | <a href="?source">View Source</a> / <a href='https://github.com/holmes-ra/eveAllianceTax'>git</a>
 </div>
 </body>
 </html>	
