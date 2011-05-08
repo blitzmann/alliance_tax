@@ -20,34 +20,6 @@
 
 ob_start("ob_gzhandler"); 
 
-//**************
-//   Config   //
-//////////////**
-
-$accountKey  = 1002; // the wallet division to pull from. 1000 - 1006 (1000 = master, 1001 = 2nd division, etc)
-$rowCount    = 1000; /* how many rows of data to pull. It has to be enough to cover the entire month for this to be accurate.
-					   If you have 1000 members in corp, and they each donate exactly once per month, this should cover it.
-					   Max is 2560 (if you need more than that, your SOL. It would require a database backend to archive 
-					   data, or some sort of function to walk the journal via fromID. Either way requires considerable 
-					   re-working to the code.) */
-
-$goal        = 10000000; // the amount of tax per month per member
-$corpDiv     = '3rd Wallet Division'; // the name of the wallet division to donate to
-$corpID      = 98022296; // corp ID, used for IGB Show Info button
-$corpTic     = 'M.DYN'; // corp ticker
-$allianceTic = '.SUDO'; // alliance ticker
-
-$leadership = array(    // list some people in the corp who can help other members with questions pertaining to the Alliance Tax
-	'Aurum Pax', 
-	'Hal IV', 
-	'Nimloth Valinor', 
-	'Sable Blitzmann', 
-	'Torvix');
-	
-//******************
-//   End Config   //
-//////////////////**
-
 define('TIMESTART', microtime(true));  // Start page benchmark
 define('VERSION', '1.1.1');  // Start page benchmark
 
@@ -56,6 +28,8 @@ if (isset($_GET['source'])) {
     show_source(__FILE__);
 	die;
 }
+
+extract(parse_ini_file("config.ini"));
 
 $ref = array( // array of different ref values
 	10 => 'Donation',
@@ -66,13 +40,12 @@ $payedTax   = array();
 $journal    = array();
 $apiMessage = '';     // a silly var that is used when updating the API
 
-$apiDetails = parse_ini_file("apiDetails.ini"); // path to protected file (outside of web root) containing director API key
+$apiDetails = parse_ini_file($apiFile); // path to protected file (outside of web root) containing director API key
 $walletURL = "http://api.eve-online.com/corp/WalletJournal.xml.aspx?useriD=$apiDetails[userID]&apiKey=$apiDetails[apiKey]&characterID=$apiDetails[charID]&accountKey=$accountKey&rowCount=$rowCount";
 $memberURL = "http://api.eve-online.com/corp/MemberTracking.xml.aspx?useriD=$apiDetails[userID]&apiKey=$apiDetails[apiKey]&characterID=$apiDetails[charID]";
 unset($apiDeatils);
 
-function get_data($url)
-{
+function get_data($url) {
 	$ch = curl_init();
 	$timeout = 5;
 	curl_setopt($ch,CURLOPT_URL,$url);
