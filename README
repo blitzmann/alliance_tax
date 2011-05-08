@@ -1,0 +1,30 @@
+Basic liscense crap first:
+
+	Alliance Tax System
+    Copyright (C) 2011 Ryan Holmes
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    To recieve a copy of this license, see:
+	<http://www.gnu.org/licenses/>.
+
+	
+Edit apiDetails-sample.ini to include the API details of a -Director- or higher. 
+Save it somewhere that IS NOT in your web root, or otherwise inaccessible to 
+someone that shouldn't know such details (via .htaccess, UNIX permissions, etc.)
+
+After that, edit config.ini to reflect your corp parameters and the path to the 
+protected API file. It's more or less self-explainatory.
+
+Have fun!
+~ Sable Blitzmann, M.DYN Direcotr
+
+
