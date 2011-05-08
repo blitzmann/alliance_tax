@@ -1,0 +1,120 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin: 0;
+    width: 100%;
+}
+
+.wrapper{
+	margin: 0 auto;
+	width: 75%;
+	font-family: Helvetica,Tahoma,Arial,sans-serif;
+	font-size: .9em;
+}
+
+h1 {	text-align: center; }
+
+h4  {
+    background-color: #F1F7FE;
+    border-width: 1px;
+	border-style: solid;
+	border-color: #8F9AA7 #8F9AA7 #C1CAD5 #8F9AA7; 
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    display:inline;
+    padding: .2em 1em;
+    position: relative;
+    top: 19px;
+}
+
+h4 + p {
+	background-color: #E7F1FD;
+	border-color: #8F9AA7 #C1CAD5 #C1CAD5;
+    border-style: solid;
+    border-width: 1px;
+    padding: .5em;
+	margin-bottom: 1em;
+	margin-top: 1.5em;
+	
+	-moz-border-radius-bottomleft:     12px;
+    -moz-border-radius-topright:    12px;
+    -webkit-border-bottom-left-radius:  12px;
+    -webkit-border-top-right-radius: 12px;
+    -khtml-border-radius-bottomleft:   12px;
+    -khtml-border-radius-topright:  12px;
+    border-radius-bottomleft:          12px;
+    border-radius-topright:         12px;
+}
+
+.infoBar {
+	padding: 5px; 
+	margin: 0 0 1em; 
+	background-color: #E3E9F2; 
+	text-align: center; 
+	font-size: .8em; 
+	border-bottom: 1px solid #C1CAD5;
+}
+
+.success {
+	margin: 0 -1em 1em; 
+	font-size: .8em; 
+	padding: 5px; 
+	text-align: center; 
+	background-color: #E6F8DE; 
+	border: 1px solid #4C9A20;'
+}
+
+.button {
+	width: 11em;
+	background-color: #f0f0f0; 
+	border: 1px solid #CCCCCC; 
+	font-size: .8em; 
+	padding: 0 0.75em;
+}
+
+table {
+	margin: 0 auto;
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+	border-collapse: collapse;
+}
+
+td, th  {
+	font-size: 1em;
+	border: 1px solid #C1CAD5;
+	padding: 3px 7px 2px 7px;
+}
+
+th {
+	font-size:1em;
+	text-align:left;
+	padding-top:5px;
+	padding-bottom:4px;
+	background-color:#E3E9F2;
+}
+
+tr.zebra td  { background-color: #F1F7FE; }
+
+hr {
+	border: none 0; 
+	border-top: 3px double #8F9AA7;
+	width: 80%;
+	height: 3px;
+	margin: 1.5em auto 1em;
+	text-align: center;
+	
+}
+
+#footer {
+	width: 60%;
+	margin: 1em auto;
+	border-top: 1px solid black;
+	padding: 1em;
+	text-align: center;
+	color: #666666;
+	font-size: .7em;
+}
+
+#footer a { color: black; }
