@@ -21,7 +21,7 @@
 ob_start("ob_gzhandler"); 
 
 define('TIMESTART', microtime(true));  // Start page benchmark
-define('VERSION', '1.2');
+define('VERSION', '1.3');
 
 if (isset($_GET['source'])) {
 	// Also, apiDetails sample file can be found in root web. It's named 'apiDetails-sample.ini'
@@ -29,9 +29,7 @@ if (isset($_GET['source'])) {
 	die;
 }
 
-extract(parse_ini_file("config.ini"));
-
-
+extract(parse_ini_file("config.ini", true));
 
 $ref = array( // array of different ref values
 	10 => 'Donation',
@@ -71,6 +69,23 @@ if (!file_exists('members.xml') || !file_exists('wallet.xml')) {
 $membersCache = new SimpleXMLElement(file_get_contents('members.xml'));
 $walletCache = new SimpleXMLElement(file_get_contents('wallet.xml'));
 
+/****
+ * IGB stuff
+ ***/
+$ingame = substr($_SERVER['HTTP_USER_AGENT'],-7) === 'EVE-IGB';
+if ($ingame) {
+    if ($_SERVER['HTTP_EVE_TRUSTED'] === 'Yes') {
+		if (isset($permissions['character'][$_SERVER['HTTP_EVE_CHARNAME']])) {
+			$access = $permissions['character'][$_SERVER['HTTP_EVE_CHARNAME']];
+		}
+	}
+}
+if (!isset($access)) {
+	$access = $permissions['default']; }
+
+if ($access < $permissions['view']) {
+	die('I am sorry, but you do not have the proper permissions to view this page.'); }
+
 // we can also select a month, useful if we need to reference a month or two back (tho don't push it, it's limited by a variety of factors such as API rowCount)
 if (isset($_GET['month']) && (int)$_GET['month'] > 0 && (int)$_GET['month'] < 13) {
 	$month = (int)$_GET['month']; }
@@ -79,6 +94,9 @@ else {
 
 // Ignores	
 if(isset($_POST['save'])) {
+	if ($access < $permissions['journal']) {
+		die("I am sorry, but you do not have permissions to do that."); }
+
 	if(!isset($_POST['ignore'])) {
 		$ignoreRef = array(); }
 	else {
@@ -92,7 +110,11 @@ else {
 	$ignoreRef = array(); 
 }
 
+// API Refresh
 if (isset($_POST['refresh'])) {
+	if ($access < $permissions['apiUpdate']) {
+		die("I am sorry, but you do not have permissions to do that."); }
+
 	$apiMessage .= "<div class='success'>";
 	if (time() > strtotime($membersCache->cachedUntil)) {
 		refreshAPI('members.xml', $memberURL); 
@@ -164,7 +186,12 @@ ksort($dirtyFreeLoaders);
 <body>
 
 <div class='infoBar'>
-	<form method='post' style='float: right;' ><button class='button' name='refresh' type='submit'<?php echo (time() < strtotime($membersCache->cachedUntil) && time() < strtotime($walletCache->cachedUntil) ? " disabled='disabled'" : null); ?>>Refresh Now!</button></form>
+	<?php 
+		if ($access >= $permissions['apiUpdate']) {
+			echo "	
+	<form method='post' style='float: right;' >
+	<button class='button' name='refresh' type='submit'".(time() < strtotime($membersCache->cachedUntil) && time() < strtotime($walletCache->cachedUntil) ? " disabled='disabled'" : null).">Refresh Now!</button></form>";
+	} ?>
 	<button class='button' style='float: left;'<?php echo (strpos($_SERVER['HTTP_USER_AGENT'], 'EVE-IGB') ? " onclick='CCPEVE.showInfo(2, $corpID)'" : " disabled='disabled'"); ?>><?php echo $corpTic; ?> Show Info</button>
 	Member API last updated: <strong><?php echo $membersCache->currentTime; ?></strong>; cached until <strong><?php echo $membersCache->cachedUntil; ?></strong> || 
 	Wallet API last updated: <strong><?php echo $walletCache->currentTime; ?></strong>; cached until <strong><?php echo $walletCache->cachedUntil; ?></strong>
@@ -256,13 +283,16 @@ foreach ($journal AS $date => $attr){
 	<td style='text-align: right; font-weight: bold;'>".number_format($balance)."</td>
 	<td>$reason</td>
 	<td>$argName1</td>
-	<td><input type='checkbox' name='ignore[]' value='$refID'".($ignore === true ? " checked='checked'" : null)."/></td>
+	<td><input type='checkbox' name='ignore[]' value='$refID'".($ignore === true ? " checked='checked'" : null).($access < $permissions['journal'] ? " disabled='disabled'" : null)." /></td>
 </tr>";
 $i++;
 }
+echo "</table>";
+
+if ($access >= $permissions['journal']) {
+	echo "<button style='float: right; margin-top: .8em; margin-right: 14em;' class='button' name='save' type='submit'>Save</button>"; }
+	
 ?>
-</table>
-<button style='float: right; margin-top: .8em; margin-right: 14em;' class='button' name='save' type='submit'>Save</button>
 </form>
 </div>
 <div class='wrapper'>
@@ -275,7 +305,7 @@ $i++;
 </p>
 </div>
 <div id='footer'>
-v<?php echo VERSION; ?> | Copyright &copy; 2011 Ryan Holmes aka Sable Blitzmann of M.DYN | EVE Online &copy; CCP | <?php echo sprintf('%01.002fms', (microtime(true) - TIMESTART) * 1000); ?> | <a href="?source">View Source</a> / <a href='https://github.com/holmes-ra/eveAllianceTax'>git</a>
+v<?php echo VERSION; ?> | Copyright &copy; 2011 Ryan Holmes aka Sable Blitzmann of M.DYN | EVE Online &copy; CCP | <?php echo sprintf('%01.002fms', (microtime(true) - TIMESTART) * 1000); ?> | <a href="?source">View Source</a> / <a href='https://github.com/holmes-ra/eveAllianceTax'>git</a><?php if ($ingame) { echo " | <button class='button' onclick=\"CCPEVE.requestTrust('http://".$_SERVER['HTTP_HOST']."/')\">Request Trust</button>"; } ?>
 </div>
 </body>
 </html>	
