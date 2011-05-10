@@ -21,7 +21,7 @@
 ob_start("ob_gzhandler"); 
 
 define('TIMESTART', microtime(true));  // Start page benchmark
-define('VERSION', '1.1.1');
+define('VERSION', '1.2');
 
 if (isset($_GET['source'])) {
 	// Also, apiDetails sample file can be found in root web. It's named 'apiDetails-sample.ini'
@@ -30,6 +30,8 @@ if (isset($_GET['source'])) {
 }
 
 extract(parse_ini_file("config.ini"));
+
+
 
 $ref = array( // array of different ref values
 	10 => 'Donation',
@@ -66,14 +68,29 @@ if (!file_exists('members.xml') || !file_exists('wallet.xml')) {
 	refreshAPI('wallet.xml', $walletURL);
 }
 
+$membersCache = new SimpleXMLElement(file_get_contents('members.xml'));
+$walletCache = new SimpleXMLElement(file_get_contents('wallet.xml'));
+
 // we can also select a month, useful if we need to reference a month or two back (tho don't push it, it's limited by a variety of factors such as API rowCount)
 if (isset($_GET['month']) && (int)$_GET['month'] > 0 && (int)$_GET['month'] < 13) {
 	$month = (int)$_GET['month']; }
 else {
 	$month = date('m'); } // current month
-	
-$membersCache = new SimpleXMLElement(file_get_contents('members.xml'));
-$walletCache = new SimpleXMLElement(file_get_contents('wallet.xml'));
+
+// Ignores	
+if(isset($_POST['save'])) {
+	if(!isset($_POST['ignore'])) {
+		$ignoreRef = array(); }
+	else {
+		$ignoreRef = filter_var_array($_POST['ignore'], FILTER_SANITIZE_NUMBER_INT);}
+
+	file_put_contents('ignoreRef.cfg', serialize($ignoreRef)); 
+}
+else if (file_exists('ignoreRef.cfg')){
+	$ignoreRef = unserialize(file_get_contents('ignoreRef.cfg')); }
+else {
+	$ignoreRef = array(); 
+}
 
 if (isset($_POST['refresh'])) {
 	$apiMessage .= "<div class='success'>";
@@ -109,16 +126,21 @@ for ($i = 0, $l = count($walletCache->result->rowset->row); $i < $l; $i++){
 		// If this log entry is not of the wanted month, skip
 		continue; 
 	}
-	if (!isset($payedTax[$name])) {
-		// If the member has not yet been added to the payed array, add them with 0 amount
-		$payedTax[$name] = 0; }
 	
-	// Add amount to member total
-	$payedTax[$name] = $payedTax[$name] + $amount;
-	
-	// If it turns out the monetary amount falls to 0, remove member from payed array
-	if ($payedTax[(string)$walletCache->result->rowset->row[$i]['ownerName1']] === 0) {
-		unset($payedTax[$name]); } // if it's 0, just might as well put them back on the non-payed list.
+	// if entry is not being ignored
+	if (!in_array($walletCache->result->rowset->row[$i]['refID'], $ignoreRef)) {
+		if (!isset($payedTax[$name])) {
+			// If the member has not yet been added to the payed array, add them with 0 amount
+			$payedTax[$name] = 0; }
+		
+		// Add amount to member total (if not ignored)
+		$payedTax[$name] = $payedTax[$name] + $amount;
+		
+		// If it turns out the monetary amount falls to 0, remove member from payed array
+		if ($payedTax[(string)$walletCache->result->rowset->row[$i]['ownerName1']] === 0) {
+			unset($payedTax[$name]); } // if it's 0, just might as well put them back on the non-payed list.
+			
+	}
 	
 	// Start building the journal array (much easier to do here while we're already dealing 
 	// with the data than to run another loop later)
@@ -181,7 +203,9 @@ foreach ($payedTax AS $name => $amount) {
 	echo "\n<tr$class><td>$name</td><td>".number_format($amount).$offset."</td></tr>"; 
 	$i++;
 }
+echo "<tr><th>Total</th><th>".number_format(array_sum($payedTax))."</th></tr>";
 ?>
+
 </table>
 </div>
 <div style='margin-top: 1.5em; width: 50%; text-align:center;'>
@@ -208,33 +232,38 @@ foreach ($dirtyFreeLoaders AS $name => $lastLogin) {
 
 <div style='text-align:center; margin: 0 auto;'>
 <h3 style='margin: 1em 0;'>Journal</h3>
+<form method='post'>
 <table>
-<tr><th>Timestamp</th><th>From</th><th>To</th><th>Type</th><th>Amount</th><th>Balance</th><th>Reason</th><th>Authorized By</th></tr>
+<tr><th>Timestamp</th><th>From</th><th>To</th><th>Type</th><th>Amount</th><th>Balance</th><th>Reason</th><th>Authorized By</th><th>Ignore</th></tr>
 <?php
 $i = 0;
 foreach ($journal AS $date => $attr){
-	if($i % 2 != 0) {
-      $class = " class='zebra'"; }
-    else {
-      $class = ''; }
-	  
 	$object2array = get_object_vars($attr);
 	extract($object2array['@attributes']);
+	$ignore = in_array($refID, $ignoreRef);
 	
-	echo "<tr$class>
+	if($i % 2 != 0) {
+		$class = " class='".($ignore == true ? "ignore" : "zebra")."'"; }
+    else {
+		$class = ($ignore === true ? " class='ignore'" : null); }
+	
+	echo "\n<tr$class>
 	<td>".date("Y-m-d H:i:s", $date)."</td>
 	<td>$ownerName1</td>
 	<td>$ownerName2</td>
 	<td>".$ref[$refTypeID]."</td>
-	<td style='text-align: right;'>". ($amount > 0 ? "<span style='color: green; font-weight: bold;'>+".number_format($amount)."</span>" : "<span style='color: red; font-weight: bold;'>".number_format($amount)."</span>")."</td>
-	<td style='text-align: right;'><strong>".number_format($balance)."</strong></td>
+	<td style='text-align: right; font-weight: bold;'><span class='". ($amount > 0 ? "positive'>+" : "negative'>").number_format($amount)."</span></td>
+	<td style='text-align: right; font-weight: bold;'>".number_format($balance)."</td>
 	<td>$reason</td>
 	<td>$argName1</td>
+	<td><input type='checkbox' name='ignore[]' value='$refID'".($ignore === true ? " checked='checked'" : null)."/></td>
 </tr>";
 $i++;
 }
 ?>
 </table>
+<button style='float: right; margin-top: .8em; margin-right: 14em;' class='button' name='save' type='submit'>Save</button>
+</form>
 </div>
 <div class='wrapper'>
 <h4>Problems?</h4>
