@@ -1,30 +1,8 @@
-Basic liscense crap first:
+aliance_tax
+===
 
-	Alliance Tax System
-    Copyright (C) 2011 Ryan Holmes
+This is a simple web application that monitors members tax contributions to the alliance or other similar entity or resource. This was developed for Massively Dynamic [M.DYN] when we were in the TJA alliance, as they required an alliance tax of 5 mil ISK per member.
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+It's a simple PHP file that pulls data from the EVE Online API servers and parses it to determine who has paid and who hasn't. Configuration is done via `config.ini`, and API details are added to `protected/apiDetails.ini` (a sample file can be found in the root project directory). Rudimentary (and very insecure) authentication is done via the HTTP headers that are sent with the in-game browser. If it's determined that your character has permissions (again, via the config), you may ignore specific erroneous Journal entries. Since this is a very mild privilege the exploitation of which is harmless, I did not write a secure authentication system.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    To recieve a copy of this license, see:
-	<http://www.gnu.org/licenses/>.
-
-	
-Edit apiDetails-sample.ini to include the API details of a -Director- or higher. 
-Save it somewhere that IS NOT in your web root, or otherwise inaccessible to 
-someone that shouldn't know such details (via .htaccess, UNIX permissions, etc.)
-
-After that, edit config.ini to reflect your corp parameters and the path to the 
-protected API file. It's more or less self-explainatory.
-
-Have fun!
-~ Sable Blitzmann, M.DYN Direcotr
-
-
+This project is hosted on GitHub AS-IS for archival purposes - while I may fiddle with it here and there for giggles, I no longer actively maintain it. Feel free to fork it and extend the functionality of it, such as integrating it with EVE Online's Single-Sign On for more secure character authentication.
